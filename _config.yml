@@ -1,0 +1,17 @@
+remote_theme: WildCodeSchool/workshops-jekyll-theme
+
+titles_from_headings:
+  enabled: false
+
+defaults:
+  - scope:
+      path: ""
+    values:
+      layout: "default"
+
+style: dev
+title: API - Express / Harmonia
+description: "How to set up a complete CRUD within an API developed with express & Harmonia"
+show_clone: false
+show_toc: true
+lang: en

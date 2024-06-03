@@ -242,9 +242,10 @@ module.exports = router;
 
 This `router.js` file is imported in the `src/config/server.js` file to apply the routes to our server adding the `/api` endpoint.
 
+
 ## Next step : Harmonia 
 
 Before continuing with the next step where we will see the implementation of this API within the Harmonia framework, I advise you to take an overview to analyze your code and be sure to understand its progress.
 
-[May the force be with you](./MORE.md)
+[Setting up an API with Harmonia](./MORE.md)
 

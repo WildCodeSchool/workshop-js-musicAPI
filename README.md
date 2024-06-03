@@ -1,14 +1,12 @@
-# Setting up an API with express & Harmonia
+# Setting up an API with express
 
 ## Introduction
-
-### Foreword :bookmark:
 
 The objective of this workshop is firstly to review the implementation and configuration of an API and a complete CRUD with the ExpressJS micro-framework, then secondly to adapt our first implementation to Harmonia.
 
 As you will have understood, the objective is above all to see each step of creating an API with nodejs independently of the architecture and framework used.
 
-### Getting started :rocket:
+### Getting started
 
 - Git clone this [project](https://github.com/WildCodeSchool/workshop-js-musicAPI)
 - Run `npm install`
@@ -25,7 +23,7 @@ In the project directory, you can run different scripts:
 - `npm test` : This is the most important command for this workshop. It will test your CRUDs with `jest`. More informations below.
 - `npm run db:dump` : Generate the database structure and insert test data
 
-### Project architecture :technologist:
+### Project architecture
 
 ```sh
 src
@@ -43,35 +41,28 @@ src
 ├── app.js # launch the api
 ```
 
-### Automated tests :test_tube:
+### Automated tests
 
 This workshop comes with integration tests on most of the routes, you can execute them to test your code using the following command : `npm test`
 
-![testgif](./assets/tests.gif)
+![testgif](https://media.giphy.com/media/sECT307ocX509Gh9bI/giphy.gif)
 
-- :loud_sound: GET `/api/tracks`
-- :loud_sound: GET `/api/tracks/1`
-- :loud_sound: POST `/api/tracks`
-- :loud_sound: PUT `/api/tracks`
-- :loud_sound: DELETE `/api/tracks`
-- :headphones: GET `/api/albums`
-- :headphones: GET `/api/albums/1`
-- :headphones: GET `/api/albums/1/tracks`
-- :headphones: POST `/api/albums`
-- :headphones: PUT `/api/albums`
-- :headphones: DELETE `/api/albums`
+- GET `/api/tracks`
+- GET `/api/tracks/1`
+- POST `/api/tracks`
+- PUT `/api/tracks`
+- DELETE `/api/tracks`
+- GET `/api/albums`
+- GET `/api/albums/1`
+- GET `/api/albums/1/tracks`
+- POST `/api/albums`
+- PUT `/api/albums`
+- DELETE `/api/albums`
 
 The test result helps you know what return is expected for each route, the errors returned can help you debug your code more easily.
 {:.alert-info}
 
-### Rules :warning:
-
-- :white_check_mark: Response bodies should be JSON.
-- :white_check_mark: Request bodies should be JSON.
-- :white_check_mark: `PUT` and `DELETE` request should return `204 no content`.
-- :white_check_mark: `POST` request should return `201 created` with the associated created resource.
-
-### Your mission :dart:
+## Your mission
 
 All you have to do, is writing your own logic in each route file (`getAll`, `getOne`, `post`, `update`, `delete`).  
 Here are some user stories about what you need to do:
@@ -90,4 +81,170 @@ Here are some user stories about what you need to do:
 
 **Remember :** for the tests to work properly, you need an `album` with id `1` and a track with id `1` in your DB, in case you removed them just run again the following command to reset your database schema : `npm run db:dump`
 
+### Rules
+
+- Response bodies should be JSON.
+- Request bodies should be JSON.
+- `PUT` and `DELETE` request should return `204 no content`.
+- `POST` request should return `201 created` with the associated created resource.
+
+
+## Guideline
+
+### API - Configuration
+
+The `/src/config/` folder contains the express server configuration as well as the configuration to connect to the database
+
+1/ `server.js`
+
+```js
+const express = require("express"); // import express
+const router = require("../api/router"); // import the main router
+
+const app = express(); // Initialize a express server
+app.use(express.json()); // Apply a global middlewares to parse incoming request data to json
+app.use("/api", router); // Apply the main router to the endpoint /api
+
+const errorHandler = async (err, req, res, next) => {
+  if (res.headersSent) {
+    return next(err);
+  }
+
+  // Log the error to the console for debugging purposes
+  console.error(err);
+  console.error("on req:", req.method, req.path);
+
+  res.status(500).json("Internal Server Error");
+};
+
+app.use(errorHandler); // Apply the error middleware globally
+
+module.exports = app; // export your server config
+
+```
+
+- Initialize a http server
+- Link the routes
+- Apply middlewares (data parsing, error handling, etc...)
+- export the server
+
+2/ `database.js`
+
+```js
+const mysql = require("mysql2/promise");
+
+const db = mysql.createPool({
+  host: process.env.DB_HOST, // address of the server
+  port: process.env.DB_PORT, // port of the DB server (mysql), not to be confused with the nodeJS server PORT !
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME,
+});
+
+module.exports = db;
+
+```
+
+- Initialize a connection to a database using the env variables defined in `.env` file.
+- export the connection
+
+### API - Models & Controllers
+
+The `/src/api` contains a folder for each modules of your api (corresponding to your tables)
+Each modules contains at least 2 files : 
+
+1/ `model.js`
+
+```js
+const db = require("../../config/database"); // Import the database connection
+
+const readAll = () => {
+  return db.query("SELECT * FROM albums");
+};
+
+// add more function for each action you want to perform on the albums table
+
+module.exports = {
+  readAll,
+};
+
+```
+
+- Import the database connection defined in `src/config/database.js`
+- Define a function for each SQL query which returns the result
+- Exports all your function in a object
+
+2/ `controller.js`
+
+```js
+const albumsModel = require("./model");
+
+const getAll = async ({ res, next }) => {
+  try {
+    const [albums] = await albumsModel.readAll(); // Fetch all albums from the database
+    res.json(albums); // Respond with the albums in JSON format
+  } catch (err) {
+    next(err); // Pass any errors to the error-handling middleware
+  }
+};
+
+// add more function for each action you want to perform
+
+module.exports = {
+  getAll,
+  getOne,
+  getTracksByAlbumId,
+  postAlbums,
+  updateAlbums,
+  deleteAlbums,
+};
+```
+
+- Import the corresponding `model`
+- Define a middleware function for each action you want to perform
+- In your function, call the corresponding model function
+- If a error is catch call the next method passing the error in argument
+- Otherwise, send a response with the corresponding status code and the data formated in json
+- Exports all your function in a object
+
+### API - Routing
+
+The `src/api/router.js` file contains all the routes for each modules with the corresponding http method and controller.
+
+`router.js`
+
+```js
+const { Router } = require("express"); // Import the router from express
+
+const router = Router(); // Initialize a new router
+
+// Import your controller middlewares
+const albums = require("./albums/controller");
+
+router.get("/albums", albums.getAll);
+router.get("/albums/:id", albums.getOne);
+router.get("/albums/:id/tracks", albums.getTracksByAlbumId);
+router.post("/albums", albums.postAlbums);
+router.put("/albums/:id", albums.updateAlbums);
+router.delete("/albums/:id", albums.deleteAlbums);
+
+// define tracks routes here
+
+module.exports = router;
+
+```
+
+- Import the Router from express
+- Initalize a new router
+- Import your controller middlewares
+- Define routes for each modules with the appropried http method (get, post, put, delete) and apply the corresponding controller middleware to it
+- Exports your router
+
+This `router.js` file is imported in the `src/config/server.js` file to apply the routes to our server adding the `/api` endpoint.
+
+## Next step : Harmonia 
+
+Before continuing with the next step where we will see the implementation of this API within the Harmonia framework, I advise you to take an overview to analyze your code and be sure to understand its progress.
+
+[May the force be with you](./MORE.md)
 

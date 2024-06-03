@@ -10,7 +10,7 @@ defaults:
       layout: "default"
 
 style: dev
-title: API - Express / Harmonia
+title: API - Express / Harmonia 1/2
 description: "How to set up a complete CRUD within an API developed with express & Harmonia"
 show_clone: false
 show_toc: true

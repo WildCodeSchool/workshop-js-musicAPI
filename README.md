@@ -64,7 +64,6 @@ The test result helps you know what return is expected for each route, the error
 
 ## Your mission
 
-All you have to do, is writing your own logic in each route file (`getAll`, `getOne`, `post`, `update`, `delete`).  
 Here are some user stories about what you need to do:
 
 - As a user, I need to be able to retrieve the full list of tracks

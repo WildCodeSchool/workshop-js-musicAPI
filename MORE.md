@@ -226,7 +226,7 @@ module.exports = {
 ```
 
 
-### Harmonia - Routes
+### Harmonia - Routes
 
 All the routes of your api is defined into the `app/routers/api` folder and allow you to define routes for each tables of your project, each route should define the http method used, the endpoint and should be linked a controller function to perform his action.
 

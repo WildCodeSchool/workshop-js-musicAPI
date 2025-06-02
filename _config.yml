@@ -10,8 +10,8 @@ defaults:
       layout: "default"
 
 style: dev
-title: API - Express / Harmonia
-description: "How to set up a complete CRUD within an API developed with express & Harmonia"
+title: API - Express / Monorepo
+description: "How to set up a complete CRUD within an API developed with express & Monorepo"
 show_clone: false
 show_toc: true
 lang: en

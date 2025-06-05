@@ -5,12 +5,12 @@ const router = Router(); // Initialize a new router
 // Import your controller middlewares
 const albums = require("./albums/controller");
 
-router.get("/albums", albums.getAll);
-router.get("/albums/:id", albums.getOne);
-router.get("/albums/:id/tracks", albums.getTracksByAlbumId);
-router.post("/albums", albums.postAlbums);
-router.put("/albums/:id", albums.updateAlbums);
-router.delete("/albums/:id", albums.deleteAlbums);
+router.get("/albums", albums.browse);
+router.get("/albums/:id", albums.read);
+router.get("/albums/:id/tracks", albums.readByAlbumId);
+router.post("/albums", albums.add);
+router.put("/albums/:id", albums.edit);
+router.delete("/albums/:id", albums.destroy);
 
 // define tracks routes here
 

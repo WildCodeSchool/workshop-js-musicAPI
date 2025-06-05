@@ -1,6 +1,6 @@
 const albumsModel = require("./model");
 
-const getAll = async ({ res, next }) => {
+const browse = async ({ res, next }) => {
   try {
     const [albums] = await albumsModel.readAll(); // Fetch all albums from the database
     res.json(albums); // Respond with the albums in JSON format
@@ -9,31 +9,71 @@ const getAll = async ({ res, next }) => {
   }
 };
 
-const getOne = (req, res) => {
-  res.status(200).send("Get One route is OK");
+const read = async (req, res, next) => {
+  try {
+    const id = req.params.id;
+    const [[album]] = await albumsModel.readOne(id);
+    if (album) res.json(album);
+    else res.sendStatus(404);
+  } catch (error) {
+    next(error);
+  }
 };
 
-const getTracksByAlbumId = (req, res) => {
-  res.status(200).send("Get Albums route is OK");
+const readByAlbumId = async (req, res, next) => {
+  try {
+    const id = req.params.id;
+    const [[album]] = await albumsModel.readOne(id);
+    const [tracks] = await albumsModel.readTracks(id);
+    album.tracks = tracks;
+    if (album) res.json(album);
+    else res.sendStatus(404);
+  } catch (error) {
+    next(error);
+  }
 };
 
-const postAlbums = (req, res) => {
-  res.status(200).send("Post route is OK");
+const add = async (req, res, next) => {
+  try {
+    const album = req.body;
+    const [result] = await albumsModel.create(album);
+    if (result.affectedRows) {
+      const [[album]] = await albumsModel.readOne(result.insertId);
+      res.status(201).json(album);
+    } else res.sendStatus(400);
+  } catch (error) {
+    next(error);
+  }
 };
 
-const updateAlbums = (req, res) => {
-  res.status(200).send("Update route is OK");
+const edit = async (req, res, next) => {
+  try {
+    const id = req.params.id;
+    const album = req.body;
+    const [result] = await albumsModel.update(album, id);
+    if (result.affectedRows) res.sendStatus(204);
+    else res.sendStatus(404);
+  } catch (error) {
+    next(error);
+  }
 };
 
-const deleteAlbums = (req, res) => {
-  res.status(200).send("Delete route is Ok");
+const destroy = async (req, res, next) => {
+  try {
+    const id = req.params.id;
+    const [result] = await albumsModel.deleteOne(id);
+    if (result.affectedRows) res.sendStatus(204);
+    else res.sendStatus(404);
+  } catch (error) {
+    next(error);
+  }
 };
 
 module.exports = {
-  getAll,
-  getOne,
-  getTracksByAlbumId,
-  postAlbums,
-  updateAlbums,
-  deleteAlbums,
+  browse,
+  read,
+  readByAlbumId,
+  add,
+  edit,
+  destroy,
 };
